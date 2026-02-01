@@ -48,7 +48,7 @@ OpenAxe utilizes **Host Networking** mode. This allows the internal `scanner.py`
 Persist the app directory so settings aren't lost like custom miner names, changes to the app, etc.
 ```yaml
       - ./:/app
-
+```
 ## 📂 Project Structure
 
 The project follows a standard Flask application layout optimized for Docker containerization.
