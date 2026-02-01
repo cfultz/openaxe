@@ -5,7 +5,7 @@
 * **Network Scanner:** Automatically discover Bitaxe devices on your LAN.
 * **Fleet Statistics:** Real-time aggregation of hashrate, power consumption, and total blocks found.
 * **Individual Miner Control:** Rename devices, update stratum settings, and manage overclocking (Frequency/Voltage) directly from the dashboard.
-* **Market Insights:** Live price and network difficulty tracking for Bitcoin 2 (BC2) and Bitcoin (BTC) via the Blockhunters API.
+* **Market Insights:** Live price and network difficulty tracking for Bitcoin 2 (BC2) via the Blockhunters API.
 * **Persistence:** Miner configurations are saved to a local JSON database, ensuring your fleet remains organized after restarts.
 
 ## ⌛ Coming Soon
