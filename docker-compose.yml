@@ -1,0 +1,13 @@
+version: '3.8'
+
+services:
+  hashwatcher:
+    build: .
+    container_name: openaxe_blockhunters
+    volumes:
+      - ./:/app
+    restart: unless-stopped
+    # Host networking is often required for LAN scanning to work correctly
+    # on Linux. If on Mac/Windows, standard bridge is fine but scanning
+    # the host LAN is trickier.
+    network_mode: host
