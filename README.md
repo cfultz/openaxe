@@ -1,6 +1,6 @@
 # OpenAxe: Bitaxe Fleet Manager
 
-**OpenAxe** is a lightweight, self-hosted dashboard designed for monitoring and managing a fleet of Bitaxe (AxeOS) and NerdMiner devices. It provides real-time hashrate aggregation, market data integration, and batch configuration tools.
+**OpenAxe** is a lightweight, self-hosted dashboard designed for monitoring and managing a fleet of Bitaxe (AxeOS) and NerdAxe devices. It provides real-time hashrate aggregation, market data integration, and batch configuration tools.
 
 ## 🚀 Features
 
