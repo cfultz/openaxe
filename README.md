@@ -66,11 +66,11 @@ openaxe/
 │       └── dashboard.js # Frontend API polling and UI logic
 └── templates/          # HTML templates
     └── dashboard.html  # Main dashboard interface
-
+```
 ---
 
 ### API Reference
-```markdown
+
 ## 🔧 API Endpoints
 
 All endpoints return JSON responses.
