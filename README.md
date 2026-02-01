@@ -24,7 +24,7 @@
 ### Quick Start
 1.  **Clone the repository:**
     ```bash
-    git clone [https://github.com/sun3ku/openaxe.git](https://github.com/sun3ku/openaxe.git)
+    git clone https://github.com/cfultz/openaxe.git
     cd openaxe
     ```
 
