@@ -32,6 +32,7 @@ function showView(view) {
 }
 
 function setCurrentAndOpen(ip) {
+    console.log("Opening miner:", ip); // Debug log
     currentMinerIP = ip;
     openDetail(ip);
 }
@@ -52,15 +53,16 @@ function renderMiners(data) {
         if(hrVal > 1000) { hrVal = hrVal/1000; hrUnit = 'TH/s'; }
         const dName = miner.display_name || miner.name;
         const statusBadge = isOnline ? '<span class="bg-green-900/30 text-green-400 px-2 py-0.5 rounded text-[10px] font-bold">LIVE</span>' : '<span class="bg-red-900/30 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold">OFFLINE</span>';
-        const cardHTML = `<div class="theme-card p-5 rounded-xl shadow-sm border border-slate-700/50 hover:border-indigo-500/50 transition relative overflow-hidden group cursor-pointer" onclick="setCurrentAndOpen('${miner.ip}')">
-                <div class="flex justify-between items-start mb-4 relative z-10">
+        // Updated HTML with z-index fixes
+        const cardHTML = `<div class="theme-card p-5 rounded-xl shadow-sm border border-slate-700/50 hover:border-indigo-500/50 transition relative overflow-hidden group cursor-pointer z-10" onclick="setCurrentAndOpen('${miner.ip}')">
+                <div class="flex justify-between items-start mb-4 relative z-20">
                     <div class="flex items-center gap-3">
                         <div class="w-2.5 h-2.5 rounded-full ${isOnline ? 'bg-green-500 shadow-[0_0_8px_rgba(34,197,94,0.6)]' : 'bg-red-500'}"></div>
                         <div><h3 class="font-bold text-sm text-slate-200">${dName}</h3><div class="flex items-center gap-2 mt-1"><p class="text-xs text-slate-500 font-mono">${miner.ip}</p>${statusBadge}</div></div>
                     </div>
-                    <button onclick="event.stopPropagation(); removeMiner('${miner.ip}')" class="text-slate-500 hover:text-red-400 transition z-20 p-2 rounded-full hover:bg-slate-800"><i class="ph-bold ph-trash"></i></button>
+                    <button onclick="event.stopPropagation(); removeMiner('${miner.ip}')" class="text-slate-500 hover:text-red-400 transition z-30 p-2 rounded-full hover:bg-slate-800"><i class="ph-bold ph-trash"></i></button>
                 </div>
-                <div class="flex justify-between items-end relative z-10">
+                <div class="flex justify-between items-end relative z-20">
                     <div><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Hashrate</p><p class="text-2xl font-bold text-white">${hrVal.toFixed(2)} <span class="text-sm font-normal text-slate-400">${hrUnit}</span></p></div>
                     <div class="text-right"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-0.5">Temp</p><p class="text-lg font-bold text-white">${(s.temp || 0).toFixed(0)}°C</p></div>
                 </div>
@@ -106,13 +108,11 @@ function updateStats(data) {
     
     const headerEl = document.getElementById('app-header-subtitle');
     if(headerEl) {
-        // Dynamic Header
         let editionText = "Mining Edition";
         if(coinSymbol === 'BC2') editionText = "BlockHunters Edition";
         if(coinSymbol === 'BTC') editionText = "Mainnet Edition";
         if(coinSymbol === 'DGB') editionText = "DigiByte Edition";
-        if(coinSymbol === 'FB') editionText = "Fractal Edition";
-        
+        if(coinSymbol === 'XEC') editionText = "eCash Edition";
         headerEl.innerHTML = `${coinSymbol} <span class="text-yellow-500">${editionText}</span>`;
     }
 
@@ -170,27 +170,39 @@ function openDetail(ip) {
     const miner = allMiners.find(m => m.ip === ip);
     if(!miner) return;
     const s = miner.stats || {};
-    document.getElementById('detailName').innerText = miner.display_name || miner.name;
-    document.getElementById('detailIP').innerText = miner.ip;
-    document.getElementById('detailVer').innerText = s.version || "Unknown";
+    
+    // Safely update elements only if they exist
+    const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
+    const setHtml = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
+    const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
+
+    setText('detailName', miner.display_name || miner.name);
+    setText('detailIP', miner.ip);
+    setText('detailVer', s.version || "Unknown");
+
     let hr = s.hashrate_10m || 0; let hrUnit = "GH/s"; if(hr > 1000) { hr = hr/1000; hrUnit = "TH/s"; }
-    document.getElementById('detailHash').innerHTML = `${hr.toFixed(2)} <span class="text-base font-normal text-slate-400">${hrUnit}</span>`;
-    document.getElementById('detailHashRaw').innerText = (s.hashrate_raw || 0).toFixed(0) + " GH/s";
+    setHtml('detailHash', `${hr.toFixed(2)} <span class="text-base font-normal text-slate-400">${hrUnit}</span>`);
+    setText('detailHashRaw', (s.hashrate_raw || 0).toFixed(0) + " GH/s");
+    
     let tStr = `${(s.temp || 0).toFixed(1)} <span class="text-lg font-normal opacity-70">°C</span>`;
     if(s.vrTemp && s.vrTemp > 0) tStr += ` <span class="text-sm opacity-50 ml-2 font-mono">VR:${s.vrTemp.toFixed(0)}°</span>`;
-    document.getElementById('detailTemp').innerHTML = tStr;
-    document.getElementById('detailWatts').innerText = (s.power || 0).toFixed(0) + " W";
+    setHtml('detailTemp', tStr);
+
+    setText('detailWatts', (s.power || 0).toFixed(0) + " W");
     let eff = hr > 0 ? (s.power || 0) / (hrUnit === "TH/s" ? hr : hr/1000) : 0;
-    document.getElementById('detailEff').innerText = eff.toFixed(2) + " J/TH";
-    document.getElementById('detailBestDiff').innerText = formatBigNum(s.bestDiff || 0);
-    document.getElementById('detailUptime').innerText = "Uptime: " + formatUptime(s.uptime || 0);
-    document.getElementById('inputFreq').value = s.frequency || 485;
-    document.getElementById('valFreq').innerText = s.frequency || 485;
-    document.getElementById('inputVolt').value = s.voltage || 1200;
-    document.getElementById('valVolt').innerText = s.voltage || 1200;
-    document.getElementById('poolURL').value = s.stratumURL || "";
-    document.getElementById('poolUser').value = s.stratumUser || "";
-    document.getElementById('poolPass').value = ""; 
+    setText('detailEff', eff.toFixed(2) + " J/TH");
+    setText('detailBestDiff', formatBigNum(s.bestDiff || 0));
+    setText('detailUptime', "Uptime: " + formatUptime(s.uptime || 0));
+
+    setVal('inputFreq', s.frequency || 485);
+    setText('valFreq', s.frequency || 485);
+    setVal('inputVolt', s.voltage || 1200);
+    setText('valVolt', s.voltage || 1200);
+
+    setVal('poolURL', s.stratumURL || "");
+    setVal('poolUser', s.stratumUser || "");
+    setVal('poolPass', ""); 
+
     resetRebootBtn();
     document.getElementById('detailModal').classList.remove('hidden');
     document.getElementById('detailModal').classList.add('flex');
