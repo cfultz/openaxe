@@ -9,6 +9,7 @@ from scanner import scan_network
 app = Flask(__name__)
 
 DATA_FILE = "miners.json"
+SETTINGS_FILE = "settings.json"
 UPDATE_EVENT = threading.Event()
 
 def load_db():
@@ -27,9 +28,8 @@ def save_db(miners):
     except:
         pass
 
-DB = {
-    "miners": load_db(),
-    "settings": {
+def load_settings():
+    defaults = {
         "coin": "BC2", 
         "subnet": "192.168.1.0/24",
         "currency": "USD",
@@ -40,6 +40,24 @@ DB = {
         "notify_blocks": True,
         "notify_tuning": True
     }
+    if os.path.exists(SETTINGS_FILE):
+        try:
+            with open(SETTINGS_FILE, 'r') as f:
+                defaults.update(json.load(f))
+        except:
+            pass
+    return defaults
+
+def save_settings(settings):
+    try:
+        with open(SETTINGS_FILE, 'w') as f:
+            json.dump(settings, f)
+    except:
+        pass
+
+DB = {
+    "miners": load_db(),
+    "settings": load_settings()
 }
 
 COINS = {
@@ -50,22 +68,10 @@ COINS = {
     "BTC": { 
         "name": "Bitcoin", "api_id": "bitcoin", "type": "mempool", 
         "api_url": "https://mempool.space/api" 
-    },
-    "BCH": { 
-        "name": "Bitcoin Cash", "api_id": "bitcoin-cash", "type": "blockchair", 
-        "api_url": "https://api.blockchair.com/bitcoin-cash/stats" 
-    },
-    "DGB": { 
-        "name": "DigiByte", "api_id": "digibyte", "type": "chainz", 
-        "api_url": "https://chainz.cryptoid.info/dgb/api.dws" 
-    },
-    "XEC": {
-        "name": "eCash", "api_id": "ecash", "type": "blockchair",
-        "api_url": "https://api.blockchair.com/ecash/stats"
     }
 }
 
-MARKET_DATA = { "price": 0, "diff": 0, "net_hash": 0, "reward": 50, "rates": {"USD": 1.0} }
+MARKET_DATA = { "price_usd": 0, "diff": 0, "net_hash": 0, "reward": 0, "rates": {"USD": 1.0} }
 OFFLINE_TRACKER = {}
 LAST_BLOCK_COUNT = 0
 
@@ -77,75 +83,42 @@ def send_ntfy(message, title="OpenAxe Alert", tags="cpu"):
     try:
         requests.post(f"{server}/{topic}", 
             data=message.encode('utf-8'),
-            headers={
-                "Title": title.encode('utf-8') if isinstance(title, str) else title, 
-                "Tags": tags
-            }, 
+            headers={"Title": title.encode('utf-8'), "Tags": tags}, 
             timeout=5)
-    except Exception as e:
-        print(f"[System] Ntfy Error: {e}")
+    except:
+        pass
 
 def fetch_market_data():
     global MARKET_DATA
     while True:
         try:
-            headers = {'User-Agent': 'Mozilla/5.0'}
             coin_code = DB['settings'].get('coin', 'BC2')
             coin_config = COINS.get(coin_code, COINS['BC2'])
             
             try:
                 cg_id = coin_config.get('api_id')
-                if cg_id:
-                    p_r = requests.get(f"https://api.coingecko.com/api/v3/simple/price?ids={cg_id}&vs_currencies=usd", timeout=5)
-                    if p_r.status_code == 200:
-                        MARKET_DATA["price_usd"] = float(p_r.json()[cg_id]['usd'])
+                p_r = requests.get(f"https://api.coingecko.com/api/v3/simple/price?ids={cg_id}&vs_currencies=usd", timeout=5)
+                if p_r.status_code == 200:
+                    MARKET_DATA["price_usd"] = float(p_r.json()[cg_id]['usd'])
             except:
                 pass 
 
             if coin_config['type'] == 'blockhunters':
-                r = requests.get(coin_config['api_url'], headers=headers, timeout=10)
+                r = requests.get(coin_config['api_url'], timeout=10)
                 if r.status_code == 200:
                     d = r.json()
                     MARKET_DATA["diff"] = float(d.get('difficulty', 0))
                     MARKET_DATA["net_hash"] = float(d.get('network_hashrate', 0)) * 1e9
                     MARKET_DATA["reward"] = float(d.get('reward_btc', 50))
-                    MARKET_DATA["price_usd"] = float(d.get('price_usd', 0))
 
             elif coin_config['type'] == 'mempool':
-                r_diff = requests.get(f"{coin_config['api_url']}/v1/difficulty-adjustment", timeout=10)
-                r_hash = requests.get(f"{coin_config['api_url']}/v1/mining/hashrate/3d", timeout=10)
+                r_stats = requests.get(f"{coin_config['api_url']}/v1/mining/hashrate/3d", timeout=10)
+                if r_stats.status_code == 200:
+                    data = r_stats.json()
+                    MARKET_DATA["diff"] = float(data.get('currentDifficulty', 0))
+                    MARKET_DATA["net_hash"] = float(data.get('currentHashrate', 0))
                 
-                if r_diff.status_code == 200:
-                    MARKET_DATA["diff"] = float(r_diff.json().get('difficulty', 0))
-                
-                if r_hash.status_code == 200:
-                    data = r_hash.json()
-                    if isinstance(data, list) and len(data) > 0:
-                        MARKET_DATA["net_hash"] = float(data[-1]['currentHashrate'])
-                
-                if coin_code == 'BTC': MARKET_DATA["reward"] = 3.125
-                else: MARKET_DATA["reward"] = 0
-
-            elif coin_config['type'] == 'blockchair':
-                r = requests.get(coin_config['api_url'], timeout=10)
-                if r.status_code == 200:
-                    d = r.json()['data']
-                    MARKET_DATA["diff"] = float(d['difficulty'])
-                    MARKET_DATA["net_hash"] = float(d['hashrate_24h'])
-                    if coin_code == 'BCH': MARKET_DATA["reward"] = 3.125
-                    elif coin_code == 'XEC': MARKET_DATA["reward"] = 3125000.0
-
-            elif coin_config['type'] == 'chainz':
-                r_diff = requests.get(f"{coin_config['api_url']}?q=getdifficulty", timeout=10)
-                r_hash = requests.get(f"{coin_config['api_url']}?q=hashrate", timeout=10)
-                
-                if r_diff.status_code == 200:
-                    MARKET_DATA["diff"] = float(r_diff.text)
-                
-                if r_hash.status_code == 200:
-                    MARKET_DATA["net_hash"] = float(r_hash.text) * 1e9
-                
-                if coin_code == 'DGB': MARKET_DATA["reward"] = 630.0 
+                MARKET_DATA["reward"] = 3.125 if coin_code == 'BTC' else 0
 
             try:
                 fr = requests.get("https://api.exchangerate-api.com/v4/latest/USD", timeout=5)
@@ -193,10 +166,9 @@ def gentle_miner_poller():
                     if ip in OFFLINE_TRACKER:
                         del OFFLINE_TRACKER[ip]
                 else:
-                    raise Exception("Status not 200")
+                    raise Exception("Offline")
             except:
-                if 'stats' not in m:
-                    m['stats'] = {'connected': False}
+                if 'stats' not in m: m['stats'] = {'connected': False}
                 m['stats']['connected'] = False
                 now = time.time()
                 if ip not in OFFLINE_TRACKER:
@@ -210,7 +182,6 @@ def gentle_miner_poller():
                             send_ntfy(f"Miner {name} offline for {int(downtime)}s", "MINER DOWN", "warning,skull")
                         OFFLINE_TRACKER[ip] = now + 86400
             time.sleep(0.5)
-
         if DB['settings'].get('notify_blocks') and LAST_BLOCK_COUNT > 0 and current_total_blocks > LAST_BLOCK_COUNT:
             send_ntfy(f"Fleet found a new block! Total: {current_total_blocks}", "BLOCK FOUND!", "moneybag,tada")
         LAST_BLOCK_COUNT = current_total_blocks
@@ -235,8 +206,7 @@ def get_miners():
     total_shares = 0
     best_miner = "-"
     for m in DB['miners']:
-        if 'stats' not in m:
-            m['stats'] = {'connected': False}
+        if 'stats' not in m: m['stats'] = {'connected': False}
         s = m['stats']
         m['display_name'] = m.get('custom_name') or m.get('name') or m['ip']
         if s.get('connected'):
@@ -250,11 +220,11 @@ def get_miners():
         results.append(m)
     curr = DB['settings'].get('currency', 'USD')
     rate = MARKET_DATA.get('rates', {}).get(curr, 1.0)
-    display_price = MARKET_DATA["price_usd"] * rate
+    display_price = MARKET_DATA.get("price_usd", 0) * rate
     db_size = os.path.getsize(DATA_FILE) if os.path.exists(DATA_FILE) else 0
     return jsonify({
         "miners": results, 
-        "settings": {"coin": DB['settings'].get('coin', 'BC2')},
+        "settings": DB['settings'],
         "market": {"price": display_price, "currency": curr, "diff": MARKET_DATA["diff"], "net_hash": MARKET_DATA["net_hash"], "reward": MARKET_DATA["reward"]},
         "fleet": {"hash": total_hr, "power": total_pwr, "best_share": global_best, "best_miner": best_miner, "blocks_found": total_blocks, "total_shares": total_shares},
         "system": { "db_size_bytes": db_size, "uptime": "100%" }
@@ -263,8 +233,6 @@ def get_miners():
 @app.route('/api/miners/pool', methods=['POST'])
 def update_miner_pool():
     d = request.json
-    if not d.get('ip'):
-        return jsonify({"status": "error", "msg": "No IP"}), 400
     try:
         payload = {"stratumURL": d.get('url'), "stratumUser": d.get('user'), "stratumPass": d.get('pass')}
         requests.patch(f"http://{d['ip']}/api/system", json=payload, timeout=5)
@@ -308,15 +276,13 @@ def delete_miner():
 
 @app.route('/api/system/reset', methods=['POST'])
 def reset_db():
-    if os.path.exists(DATA_FILE):
-        os.remove(DATA_FILE)
+    if os.path.exists(DATA_FILE): os.remove(DATA_FILE)
     DB['miners'] = []
     return jsonify({"status": "ok"})
 
 @app.route('/api/overclock', methods=['POST'])
 def overclock():
     d = request.json
-    if not d.get('ip'): return jsonify({"status": "error"}), 400
     try:
         payload = {"frequency": int(d['freq']), "coreVoltage": int(d['volt'])}
         requests.patch(f"http://{d['ip']}/api/system", json=payload, timeout=5)
@@ -326,8 +292,6 @@ def overclock():
     except:
         try:
             requests.post(f"http://{d['ip']}/api/system/update", json=payload, timeout=5)
-            if DB['settings'].get('notify_tuning'):
-                send_ntfy(f"Tuning (Legacy) applied to {d['ip']}", "TUNING SUCCESS", "zap")
             return jsonify({"status": "ok"})
         except Exception as e:
             return jsonify({"status": "error", "details": str(e)}), 500
@@ -343,6 +307,7 @@ def reboot():
 @app.route('/api/settings', methods=['POST'])
 def update_settings():
     DB['settings'].update(request.json)
+    save_settings(DB['settings'])
     UPDATE_EVENT.set()
     return jsonify({"status": "ok"})
 
@@ -350,22 +315,14 @@ def update_settings():
 def test_ntfy():
     topic = DB['settings'].get('ntfy_topic', '').strip()
     server = DB['settings'].get('ntfy_server', 'https://ntfy.sh').strip().rstrip('/')
-    
-    if not topic:
-        return jsonify({"status": "error", "msg": "Topic is empty. Please save settings first."}), 400
-
+    if not topic: return jsonify({"status": "error", "msg": "Empty topic"}), 400
     try:
         r = requests.post(f"{server}/{topic}", 
-            data="Testing OpenAxe notification system. If you see this, it works!".encode('utf-8'),
-            headers={"Title": "TEST SUCCESS", "Tags": "test_tube,white_check_mark"}, 
-            timeout=5)
-        
-        if r.status_code == 200:
-            return jsonify({"status": "ok", "msg": f"Sent! Server responded: {r.status_code}"})
-        else:
-            return jsonify({"status": "error", "msg": f"Server Error {r.status_code}: {r.text}"}), 500
-    except Exception as e:
-        return jsonify({"status": "error", "msg": f"Connection Failed: {str(e)}"}), 500
+            data="Testing notification system.".encode('utf-8'),
+            headers={"Title": "TEST SUCCESS", "Tags": "test_tube,white_check_mark"}, timeout=5)
+        return jsonify({"status": "ok"}) if r.status_code == 200 else jsonify({"status": "error"}), 500
+    except:
+        return jsonify({"status": "error"}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5055, debug=True)

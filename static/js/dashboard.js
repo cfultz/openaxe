@@ -31,8 +31,40 @@ function showView(view) {
     }
 }
 
+function copyToClipboard(text, btnId) {
+    if (!navigator.clipboard) {
+        const textArea = document.createElement("textarea");
+        textArea.value = text;
+        document.body.appendChild(textArea);
+        textArea.select();
+        try {
+            document.execCommand('copy');
+            updateCopyButton(btnId);
+        } catch (err) {
+            console.error('Fallback: Oops, unable to copy', err);
+        }
+        document.body.removeChild(textArea);
+        return;
+    }
+    navigator.clipboard.writeText(text).then(() => {
+        updateCopyButton(btnId);
+    }, (err) => {
+        console.error('Async: Could not copy text: ', err);
+    });
+}
+
+function updateCopyButton(btnId) {
+    const btn = document.getElementById(btnId);
+    const originalHtml = btn.innerHTML;
+    btn.innerHTML = '<i class="ph-bold ph-check text-green-500"></i>';
+    btn.classList.add('text-green-500');
+    setTimeout(() => { 
+        btn.innerHTML = originalHtml; 
+        btn.classList.remove('text-green-500');
+    }, 2000);
+}
+
 function setCurrentAndOpen(ip) {
-    console.log("Opening miner:", ip); // Debug log
     currentMinerIP = ip;
     openDetail(ip);
 }
@@ -53,7 +85,6 @@ function renderMiners(data) {
         if(hrVal > 1000) { hrVal = hrVal/1000; hrUnit = 'TH/s'; }
         const dName = miner.display_name || miner.name;
         const statusBadge = isOnline ? '<span class="bg-green-900/30 text-green-400 px-2 py-0.5 rounded text-[10px] font-bold">LIVE</span>' : '<span class="bg-red-900/30 text-red-400 px-2 py-0.5 rounded text-[10px] font-bold">OFFLINE</span>';
-        // Updated HTML with z-index fixes
         const cardHTML = `<div class="theme-card p-5 rounded-xl shadow-sm border border-slate-700/50 hover:border-indigo-500/50 transition relative overflow-hidden group cursor-pointer z-10" onclick="setCurrentAndOpen('${miner.ip}')">
                 <div class="flex justify-between items-start mb-4 relative z-20">
                     <div class="flex items-center gap-3">
@@ -102,17 +133,12 @@ function updateStats(data) {
     if(netDiffEl) netDiffEl.innerText = formatBigNum(data.market.diff || 0);
     document.getElementById('net-hash').innerText = formatBigNum(data.market.net_hash, "H/s");
     
-    // Coin Display Logic
     const coinSymbol = data.settings && data.settings.coin ? data.settings.coin : "BC2";
     document.getElementById('block-reward').innerText = data.market.reward + " " + coinSymbol;
     
     const headerEl = document.getElementById('app-header-subtitle');
     if(headerEl) {
-        let editionText = "Mining Edition";
-        if(coinSymbol === 'BC2') editionText = "BlockHunters Edition";
-        if(coinSymbol === 'BTC') editionText = "Mainnet Edition";
-        if(coinSymbol === 'DGB') editionText = "DigiByte Edition";
-        if(coinSymbol === 'XEC') editionText = "eCash Edition";
+        let editionText = coinSymbol === 'BTC' ? "Bitcoin Edition" : "Bitcoin II Edition";
         headerEl.innerHTML = `${coinSymbol} <span class="text-yellow-500">${editionText}</span>`;
     }
 
@@ -171,14 +197,12 @@ function openDetail(ip) {
     if(!miner) return;
     const s = miner.stats || {};
     
-    // Safely update elements only if they exist
     const setText = (id, val) => { const el = document.getElementById(id); if(el) el.innerText = val; };
     const setHtml = (id, val) => { const el = document.getElementById(id); if(el) el.innerHTML = val; };
     const setVal = (id, val) => { const el = document.getElementById(id); if(el) el.value = val; };
 
     setText('detailName', miner.display_name || miner.name);
     setText('detailIP', miner.ip);
-    setText('detailVer', s.version || "Unknown");
 
     let hr = s.hashrate_10m || 0; let hrUnit = "GH/s"; if(hr > 1000) { hr = hr/1000; hrUnit = "TH/s"; }
     setHtml('detailHash', `${hr.toFixed(2)} <span class="text-base font-normal text-slate-400">${hrUnit}</span>`);
@@ -214,12 +238,14 @@ function closeDetail() {
 }
 
 function formatBigNum(num, unit='') {
-    if (num >= 1e18) return (num / 1e18).toFixed(2) + " E" + unit;
-    if (num >= 1e15) return (num / 1e15).toFixed(2) + " P" + unit;
-    if (num >= 1e12) return (num / 1e12).toFixed(2) + " T" + unit;
-    if (num >= 1e9)  return (num / 1e9).toFixed(2) + " G" + unit;
-    if (num >= 1e6)  return (num / 1e6).toFixed(2) + " M" + unit;
-    if (num >= 1e3)  return (num / 1e3).toFixed(2) + " k" + unit;
+    if (num >= 1e24) return (num / 1e24).toFixed(2) + " Y" + unit; // Yottahash
+    if (num >= 1e21) return (num / 1e21).toFixed(2) + " Z" + unit; // Zettahash
+    if (num >= 1e18) return (num / 1e18).toFixed(2) + " E" + unit; // Exahash
+    if (num >= 1e15) return (num / 1e15).toFixed(2) + " P" + unit; // Petahash
+    if (num >= 1e12) return (num / 1e12).toFixed(2) + " T" + unit; // Terahash
+    if (num >= 1e9)  return (num / 1e9).toFixed(2) + " G" + unit;  // Gigahash
+    if (num >= 1e6)  return (num / 1e6).toFixed(2) + " M" + unit;  // Megahash
+    if (num >= 1e3)  return (num / 1e3).toFixed(2) + " k" + unit;  // Kilohash
     return num.toLocaleString() + " " + unit;
 }
 
@@ -263,7 +289,7 @@ async function saveName() {
 async function updateCoin() {
     const coin = document.getElementById('coinSelect').value;
     await fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({coin: coin}) });
-    alert("Coin updated. Fetching new data...");
+    pollData();
 }
 
 async function updateCurrency() {
@@ -311,8 +337,6 @@ async function saveNotificationSettings() {
         notify_tuning: document.getElementById('notifyTuning').checked
     };
     await fetch('/api/settings', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify(config) });
-    const warning = document.getElementById('publicWarning');
-    if (config.ntfy_server.includes('ntfy.sh')) warning.classList.remove('hidden'); else warning.classList.add('hidden');
     alert("Settings updated!");
 }
 
@@ -327,12 +351,6 @@ async function rebootMiner() {
     if(!rebootConfirmState) { rebootConfirmState = true; btn.innerText = "Confirm?"; btn.className = "bg-red-600 text-white px-4 py-3 rounded-xl font-bold animate-pulse w-1/3"; setTimeout(resetRebootBtn, 3000); return; }
     await fetch('/api/reboot', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ip: ip }) });
     closeDetail();
-}
-
-function setPreset(level) {
-    const f = document.getElementById('inputFreq'), v = document.getElementById('inputVolt');
-    if(level === 'eco') { f.value = 400; v.value = 1100; } else if(level === 'default') { f.value = 485; v.value = 1200; } else if(level === 'turbo') { f.value = 550; v.value = 1350; } else { f.value = 600; v.value = 1450; }
-    f.dispatchEvent(new Event('input')); v.dispatchEvent(new Event('input'));
 }
 
 async function applyOverclock() {
