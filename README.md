@@ -10,9 +10,9 @@
 
 ## ☕ Support the Project
 If you find this tool useful, consider supporting the developer:
-* **Lightning:** caleb@getalby.com
-* **BTC:** bc1qj80p66d9fpg95e4e897933wcl56as7l5mqj6as
-* **BC2:** BCHvT1t9LpG1yS2v6X7A8b9C0d1E2f3G4h
+* **Lightning:** lightning@cfultz.com
+* **BTC:** bc1qg4qq5xmtk59tef5n729nn7v2y30sgkgkducwru
+* **BC2:** bc1qrkakhz9lr9jg6hzprfch83q9yk3fstnyre3a2m
 
 ---
 
@@ -24,4 +24,4 @@ If you find this tool useful, consider supporting the developer:
 
 ## ⚖️ License
 This project is licensed under a **Modified MIT License**. 
-Permission is hereby granted to use, copy, modify, and merge the software, provided that the **"Buy Me a Coffee" / Donation section** in the web interface and the README remain intact and visible. Removing or altering the developer's donation addresses is strictly prohibited under this license.
+Permission is hereby granted to use, copy, modify, and merge the software, provided that the **"Buy Me a Coffee" / Donation section** in the web interface and the README remain intact and visible. Removing or altering the developer's donation addresses is strictly prohibited.
