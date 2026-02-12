@@ -3,14 +3,19 @@ import requests
 import threading
 import time
 import os
+import queue
 from flask import Flask, render_template, request, jsonify
 from scanner import scan_network
+from pynostr.key import PrivateKey
+from pynostr.relay_manager import RelayManager
+from pynostr.encrypted_dm import EncryptedDirectMessage
 
 app = Flask(__name__)
 
 DATA_FILE = "miners.json"
 SETTINGS_FILE = "settings.json"
 UPDATE_EVENT = threading.Event()
+NOSTR_QUEUE = queue.Queue()
 
 def load_db():
     if os.path.exists(DATA_FILE):
@@ -38,7 +43,10 @@ def load_settings():
         "ntfy_timeout": 30,
         "notify_offline": True,
         "notify_blocks": True,
-        "notify_tuning": True
+        "notify_tuning": True,
+        "nostr_privkey": "",
+        "nostr_recipient_pubkey": "",
+        "nostr_relays": ["wss://nostr.mom/", "wss://nostrelites.org/", "wss://relay.damus.io/", "wss://wot.nostr.net/"]
     }
     if os.path.exists(SETTINGS_FILE):
         try:
@@ -75,6 +83,33 @@ MARKET_DATA = { "price_usd": 0, "diff": 0, "net_hash": 0, "reward": 0, "rates": 
 OFFLINE_TRACKER = {}
 LAST_BLOCK_COUNT = 0
 
+def nostr_queue_worker():
+    while True:
+        try:
+            item = NOSTR_QUEUE.get()
+            if item is None: break
+            message, priv, pub, relays = item
+            try:
+                pk = PrivateKey.from_hex(priv)
+                dm = EncryptedDirectMessage()
+                dm.encrypt(pk.hex(), recipient_pubkey=pub, cleartext_content=message)
+                event = dm.to_event()
+                event.pubkey = pk.public_key.hex()
+                event.add_tag("p", pub)
+                event.sign(pk.hex())
+                rm = RelayManager(timeout=6)
+                for r in relays: rm.add_relay(r.strip())
+                time.sleep(1.5)
+                rm.publish_event(event)
+                rm.run_sync()
+                time.sleep(2)
+                rm.close_connections()
+            except Exception as e: print(f"Nostr Error: {e}")
+            NOSTR_QUEUE.task_done()
+        except: time.sleep(1)
+
+threading.Thread(target=nostr_queue_worker, daemon=True).start()
+
 def send_ntfy(message, title="OpenAxe Alert", tags="cpu"):
     topic = DB['settings'].get('ntfy_topic', '').strip()
     server = DB['settings'].get('ntfy_server', 'https://ntfy.sh').strip().rstrip('/')
@@ -87,6 +122,12 @@ def send_ntfy(message, title="OpenAxe Alert", tags="cpu"):
             timeout=5)
     except:
         pass
+
+def send_nostr(message):
+    p = DB['settings'].get('nostr_privkey', '').strip()
+    r_pub = DB['settings'].get('nostr_recipient_pubkey', '').strip()
+    relays = DB['settings'].get('nostr_relays', [])
+    if p and r_pub: NOSTR_QUEUE.put((message, p, r_pub, relays))
 
 def fetch_market_data():
     global MARKET_DATA
@@ -179,11 +220,15 @@ def gentle_miner_poller():
                     if threshold <= downtime < threshold + 25:
                         if DB['settings'].get('notify_offline'):
                             name = m.get('custom_name') or m.get('name') or ip
-                            send_ntfy(f"Miner {name} offline for {int(downtime)}s", "MINER DOWN", "warning,skull")
+                            msg = f"Miner {name} offline for {int(downtime)}s"
+                            send_ntfy(msg, "MINER DOWN", "warning,skull")
+                            send_nostr(msg)
                         OFFLINE_TRACKER[ip] = now + 86400
             time.sleep(0.5)
         if DB['settings'].get('notify_blocks') and LAST_BLOCK_COUNT > 0 and current_total_blocks > LAST_BLOCK_COUNT:
-            send_ntfy(f"Fleet found a new block! Total: {current_total_blocks}", "BLOCK FOUND!", "moneybag,tada")
+            msg = f"Fleet found a new block! Total: {current_total_blocks}"
+            send_ntfy(msg, "BLOCK FOUND!", "moneybag,tada")
+            send_nostr(msg)
         LAST_BLOCK_COUNT = current_total_blocks
         time.sleep(20)
 
@@ -287,7 +332,9 @@ def overclock():
         payload = {"frequency": int(d['freq']), "coreVoltage": int(d['volt'])}
         requests.patch(f"http://{d['ip']}/api/system", json=payload, timeout=5)
         if DB['settings'].get('notify_tuning'):
-            send_ntfy(f"Tuning applied to {d['ip']}: {d['freq']}MHz / {d['volt']}mV", "TUNING SUCCESS", "zap")
+            msg = f"Tuning applied to {d['ip']}: {d['freq']}MHz / {d['volt']}mV"
+            send_ntfy(msg, "TUNING SUCCESS", "zap")
+            send_nostr(msg)
         return jsonify({"status": "ok"})
     except:
         try:
@@ -323,6 +370,14 @@ def test_ntfy():
         return jsonify({"status": "ok"}) if r.status_code == 200 else jsonify({"status": "error"}), 500
     except:
         return jsonify({"status": "error"}), 500
+
+@app.route('/api/test_nostr', methods=['POST'])
+def test_nostr():
+    try:
+        send_nostr("Testing Nostr notification system. If you see this, it works!")
+        return jsonify({"status": "ok"})
+    except Exception as e:
+        return jsonify({"status": "error", "msg": str(e)}), 500
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5055, debug=True)

@@ -238,14 +238,14 @@ function closeDetail() {
 }
 
 function formatBigNum(num, unit='') {
-    if (num >= 1e24) return (num / 1e24).toFixed(2) + " Y" + unit; // Yottahash
-    if (num >= 1e21) return (num / 1e21).toFixed(2) + " Z" + unit; // Zettahash
-    if (num >= 1e18) return (num / 1e18).toFixed(2) + " E" + unit; // Exahash
-    if (num >= 1e15) return (num / 1e15).toFixed(2) + " P" + unit; // Petahash
-    if (num >= 1e12) return (num / 1e12).toFixed(2) + " T" + unit; // Terahash
-    if (num >= 1e9)  return (num / 1e9).toFixed(2) + " G" + unit;  // Gigahash
-    if (num >= 1e6)  return (num / 1e6).toFixed(2) + " M" + unit;  // Megahash
-    if (num >= 1e3)  return (num / 1e3).toFixed(2) + " k" + unit;  // Kilohash
+    if (num >= 1e24) return (num / 1e24).toFixed(2) + " Y" + unit; 
+    if (num >= 1e21) return (num / 1e21).toFixed(2) + " Z" + unit; 
+    if (num >= 1e18) return (num / 1e18).toFixed(2) + " E" + unit; 
+    if (num >= 1e15) return (num / 1e15).toFixed(2) + " P" + unit; 
+    if (num >= 1e12) return (num / 1e12).toFixed(2) + " T" + unit; 
+    if (num >= 1e9)  return (num / 1e9).toFixed(2) + " G" + unit;  
+    if (num >= 1e6)  return (num / 1e6).toFixed(2) + " M" + unit;  
+    if (num >= 1e3)  return (num / 1e3).toFixed(2) + " k" + unit;  
     return num.toLocaleString() + " " + unit;
 }
 
@@ -327,11 +327,22 @@ async function testNtfy() {
     } catch (e) { alert("Failed: " + e.message); } finally { btn.disabled = false; btn.innerHTML = originalHtml; }
 }
 
+async function testNostr() {
+    const btn = document.querySelector('button[onclick="testNostr()"]'), originalHtml = btn.innerHTML;
+    btn.disabled = true; btn.innerHTML = '<i class="ph-bold ph-circle-notched animate-spin"></i> Sending...';
+    try {
+        const res = await fetch('/api/test_nostr', { method: 'POST' }), data = await res.json();
+        alert(data.status === "ok" ? "Nostr test notification fired!" : "Error: " + data.msg);
+    } catch (e) { alert("Failed: " + e.message); } finally { btn.disabled = false; btn.innerHTML = originalHtml; }
+}
+
 async function saveNotificationSettings() {
     const config = {
         ntfy_server: document.getElementById('ntfyServer').value,
         ntfy_topic: document.getElementById('ntfyTopic').value,
         ntfy_timeout: parseInt(document.getElementById('ntfyTimeout').value),
+        nostr_privkey: document.getElementById('nostrPrivKey').value,
+        nostr_recipient_pubkey: document.getElementById('nostrPubKey').value,
         notify_offline: document.getElementById('notifyOffline').checked,
         notify_blocks: document.getElementById('notifyBlocks').checked,
         notify_tuning: document.getElementById('notifyTuning').checked
