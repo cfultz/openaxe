@@ -1,77 +1,40 @@
 <!DOCTYPE html>
 <html lang="en" class="h-full">
 <head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta charset="UTF-8"><meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>OpenAxe Fleet</title>
-    <script src="https://cdn.tailwindcss.com"></script>
-    <script src="https://unpkg.com/@phosphor-icons/web"></script>
-    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
-    <script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
-    <style>
-        :root { --bg-primary: #0f172a; --text-primary: #f8fafc; --card-bg: #1e293b; }
-        body { background-color: var(--bg-primary); color: var(--text-primary); }
-        .theme-card { background-color: var(--card-bg); }
-    </style>
+    <script src="https://cdn.tailwindcss.com"></script><script src="https://unpkg.com/@phosphor-icons/web"></script>
+    <script src="https://cdn.jsdelivr.net/npm/chart.js"></script><script src="https://cdn.jsdelivr.net/npm/canvas-confetti@1.6.0/dist/confetti.browser.min.js"></script>
+    <style>:root { --bg-primary: #0f172a; --text-primary: #f8fafc; --card-bg: #1e293b; } body { background-color: var(--bg-primary); color: var(--text-primary); } .theme-card { background-color: var(--card-bg); }</style>
 </head>
 <body class="h-full font-sans antialiased">
     <nav class="theme-card border-b border-slate-700/50 px-6 py-4 sticky top-0 z-50 flex justify-between items-center shadow-sm">
-        <div class="flex items-center gap-3">
-            <div class="bg-indigo-600 text-white p-2 rounded-lg shadow-lg shadow-indigo-500/30"><i class="ph-bold ph-cpu text-xl"></i></div>
-            <div>
-                <h1 class="text-lg font-extrabold tracking-tight">
-                    <span class="text-slate-400">Open</span><span class="text-slate-300">Axe</span> <span class="text-indigo-500">Fleet</span>
-                </h1>
-                <p id="app-header-subtitle" class="text-[10px] text-slate-500 font-mono tracking-widest uppercase font-bold">BC2 <span class="text-yellow-500">Bitcoin II</span> Edition</p>
-            </div>
-        </div>
-        <div class="flex gap-4">
-            <a href="#" onclick="showView('dashboard'); return false;" class="flex items-center gap-2 hover:text-indigo-400 text-slate-300 font-bold transition"><i class="ph-bold ph-monitor"></i> Dashboard</a>
-            <a href="#" onclick="showView('settings'); return false;" class="flex items-center gap-2 hover:text-indigo-400 text-slate-300 font-bold transition"><i class="ph-bold ph-gear"></i> Settings</a>
-        </div>
+        <div class="flex items-center gap-3"><div class="bg-indigo-600 text-white p-2 rounded-lg shadow-lg"><i class="ph-bold ph-cpu text-xl"></i></div><div><h1 class="text-lg font-extrabold tracking-tight">OpenAxe <span class="text-indigo-500">Fleet</span></h1><p id="app-header-subtitle" class="text-[10px] text-slate-500 font-mono tracking-widest uppercase font-bold">BC2 Bitcoin II Edition</p></div></div>
+        <div class="flex gap-4"><a href="#" onclick="showView('dashboard'); return false;" class="hover:text-indigo-400 text-slate-300 font-bold transition flex items-center gap-2"><i class="ph-bold ph-monitor"></i> Dashboard</a><a href="#" onclick="showView('settings'); return false;" class="hover:text-indigo-400 text-slate-300 font-bold transition flex items-center gap-2"><i class="ph-bold ph-gear"></i> Settings</a></div>
     </nav>
-
     <main class="max-w-7xl mx-auto px-6 py-8">
         <div id="view-dashboard">
             <div class="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-6">
-                <div id="graph-card" class="lg:col-span-2 theme-card p-6 rounded-2xl shadow-sm border border-slate-700/50 flex flex-col min-h-[340px] relative overflow-hidden">
-                    <div class="flex justify-between items-center mb-2 relative z-10">
-                        <div>
-                            <h2 class="text-xs font-bold uppercase tracking-wider text-slate-500">Total Hashrate</h2>
-                            <p class="text-4xl font-bold tracking-tight text-white" id="hero-hash">0.00 <span class="text-xl text-slate-400 font-normal">TH/s</span></p>
-                        </div>
-                        <div class="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-bold animate-pulse border border-green-500/20">● LIVE</div>
-                    </div>
-                    <div class="flex-1 relative w-full h-full min-h-0 z-10"><canvas id="hashChart"></canvas></div>
+                <div id="graph-card" class="lg:col-span-2 theme-card p-6 rounded-2xl border border-slate-700/50 flex flex-col min-h-[340px] relative overflow-hidden">
+                    <div class="flex justify-between items-center mb-2 z-10"><div><h2 class="text-xs font-bold uppercase text-slate-500">Total Hashrate</h2><p class="text-4xl font-bold text-white" id="hero-hash">0.00 TH/s</p></div><div class="px-3 py-1 bg-green-500/10 text-green-500 rounded-full text-xs font-bold animate-pulse border border-green-500/20">● LIVE</div></div>
+                    <div class="flex-1 relative z-10"><canvas id="hashChart"></canvas></div>
                 </div>
                 <div class="grid grid-cols-1 gap-4">
-                    <div class="theme-card p-5 rounded-xl border-l-4 border-l-yellow-500 shadow-sm border border-slate-700/50 relative overflow-hidden bg-gradient-to-br from-yellow-500/10 to-transparent">
-                        <div class="relative z-10">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-yellow-500 mb-1">Blocks Mined</p>
-                            <p class="text-4xl font-bold text-yellow-400" id="blocks-found">0</p>
-                        </div>
-                        <i class="ph-fill ph-crown absolute right-2 bottom-2 text-6xl text-yellow-500 opacity-20"></i>
-                    </div>
-                    <div class="theme-card p-5 rounded-xl border-l-4 border-l-indigo-500 shadow-sm border border-slate-700/50 relative overflow-hidden">
-                        <div class="relative z-10">
-                            <p class="text-[10px] font-bold uppercase tracking-wider text-slate-500 mb-1">Solo Luck</p>
-                            <p class="text-2xl font-bold text-indigo-400" id="luck-time">Calculating...</p>
-                            <p class="text-xs text-slate-500 mt-1 font-medium" id="luck-prob">--% daily probability</p>
-                        </div>
-                    </div>
+                    <div class="theme-card p-5 rounded-xl border-l-4 border-l-yellow-500 border border-slate-700/50 relative bg-gradient-to-br from-yellow-500/10 to-transparent"><div class="relative z-10"><p class="text-[10px] font-bold uppercase text-yellow-500 mb-1">Blocks Mined</p><p class="text-4xl font-bold text-yellow-400" id="blocks-found">0</p></div><i class="ph-fill ph-crown absolute right-2 bottom-2 text-6xl text-yellow-500 opacity-20"></i></div>
+                    <div class="theme-card p-5 rounded-xl border-l-4 border-l-indigo-500 border border-slate-700/50 relative"><div class="relative z-10"><p class="text-[10px] font-bold uppercase text-slate-500 mb-1">Solo Luck</p><p class="text-2xl font-bold text-indigo-400" id="luck-time">Calculating...</p><p class="text-xs text-slate-500 mt-1 font-medium" id="luck-prob">--% daily</p></div></div>
                     <div class="grid grid-cols-2 gap-4">
-                         <div class="theme-card p-4 rounded-xl border border-slate-700/50"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Net Hash</p><p class="text-lg font-bold text-white" id="net-hash">0 EH/s</p></div>
-                         <div class="theme-card p-4 rounded-xl border border-slate-700/50"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Reward</p><p class="text-lg font-bold text-green-500" id="block-reward">--</p></div>
-                         <div class="theme-card p-4 rounded-xl border border-slate-700/50 border-l-2 border-l-amber-500"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Best Share</p><p class="text-lg font-bold text-amber-500" id="global-best-share">0</p></div>
-                         <div class="theme-card p-4 rounded-xl border border-slate-700/50"><p class="text-[10px] font-bold uppercase tracking-wider text-slate-500">Diff</p><p class="text-lg font-bold text-slate-300" id="network-diff">0</p></div>
+                         <div class="theme-card p-4 rounded-xl border border-slate-700/50"><p class="text-[10px] font-bold uppercase text-slate-500">Net Hash</p><p class="text-lg font-bold text-white" id="net-hash">0 EH/s</p></div>
+                         <div class="theme-card p-4 rounded-xl border border-slate-700/50"><p class="text-[10px] font-bold uppercase text-slate-500">Reward</p><p class="text-lg font-bold text-green-500" id="block-reward">--</p></div>
+                         <div class="theme-card p-4 rounded-xl border border-slate-700/50 border-l-2 border-l-amber-500"><p class="text-[10px] font-bold uppercase text-slate-500">Best Share</p><p class="text-lg font-bold text-amber-500" id="global-best-share">0</p></div>
+                         <div class="theme-card p-4 rounded-xl border border-slate-700/50"><p class="text-[10px] font-bold uppercase text-slate-500">Diff</p><p class="text-lg font-bold text-slate-300" id="network-diff">0</p></div>
                     </div>
                 </div>
             </div>
             <div class="grid grid-cols-2 md:grid-cols-4 gap-4 mb-8">
                 <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Price</span><span class="font-mono font-bold text-green-500" id="market-price">$0.00</span></div>
-                <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Power</span><span class="font-mono font-bold text-slate-300" id="fleet-power">0 W</span></div>
-                <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Efficiency</span><span class="font-mono font-bold text-indigo-500" id="fleet-eff">0 J/TH</span></div>
-                <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Active</span><span class="font-mono font-bold text-slate-300" id="fleet-count">0</span></div>
+                <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Daily Cost</span><span class="font-mono font-bold text-red-400" id="pill-daily-cost">$0.00</span></div>
+                <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Monthly</span><span class="font-mono font-bold text-slate-300" id="pill-monthly-cost">$0.00</span></div>
+                <div class="theme-card px-4 py-3 rounded-lg border border-slate-700/50 flex justify-between items-center"><span class="text-xs font-bold text-slate-500 uppercase">Power</span><span class="font-mono font-bold text-indigo-400" id="fleet-power">0 W</span></div>
             </div>
             <h3 class="text-sm font-bold mb-4 flex items-center gap-2 opacity-60 uppercase tracking-widest text-white"><i class="ph-fill ph-cpu"></i> Active Fleet</h3>
             <div id="miners-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6"></div>
@@ -80,198 +43,80 @@
         <div id="view-settings" class="hidden space-y-8">
             <h2 class="text-2xl font-bold text-white mb-6">System Configuration</h2>
             <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                <div class="theme-card p-6 rounded-xl shadow-sm border border-slate-700/50">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"><i class="ph-bold ph-coin"></i> Targets</h3>
+                <div class="theme-card p-6 rounded-xl border border-slate-700/50"><h3 class="text-sm font-bold text-slate-500 uppercase mb-4"><i class="ph-bold ph-coin"></i> Targets</h3>
                     <div class="space-y-4">
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Coin</label>
-                            <select id="coinSelect" onchange="updateCoin()" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded outline-none focus:border-indigo-500 text-sm">
-                                {% for code, data in coins.items() %}
-                                <option value="{{ code }}" {% if settings.coin == code %}selected{% endif %}>{{ data.name }} ({{ code }})</option>
-                                {% endfor %}
-                            </select>
-                        </div>
-                        <div>
-                            <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Currency</label>
-                            <select id="currencySelect" onchange="updateCurrency()" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded outline-none focus:border-indigo-500 text-sm">
-                                <option value="USD" {% if settings.currency == 'USD' %}selected{% endif %}>USD ($)</option>
-                                <option value="EUR" {% if settings.currency == 'EUR' %}selected{% endif %}>EUR (€)</option>
-                                <option value="GBP" {% if settings.currency == 'GBP' %}selected{% endif %}>GBP (£)</option>
-                                <option value="JPY" {% if settings.currency == 'JPY' %}selected{% endif %}>JPY (¥)</option>
-                            </select>
+                        <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Coin</label><select id="coinSelect" onchange="updateCoin()" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm outline-none">{% for code, data in coins.items() %}<option value="{{ code }}" {% if settings.coin == code %}selected{% endif %}>{{ data.name }} ({{ code }})</option>{% endfor %}</select></div>
+                        <div class="grid grid-cols-2 gap-4">
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Currency</label><select id="currencySelect" onchange="updateCurrency()" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm outline-none"><option value="USD" {% if settings.currency == 'USD' %}selected{% endif %}>USD ($)</option><option value="EUR" {% if settings.currency == 'EUR' %}selected{% endif %}>EUR (€)</option><option value="GBP" {% if settings.currency == 'GBP' %}selected{% endif %}>GBP (£)</option></select></div>
+                            <div><label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Elec. Cost ($/kWh)</label><input type="number" step="0.01" id="kwhPrice" value="{{ settings.kwh_price }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm"></div>
                         </div>
                     </div>
                 </div>
-                <div class="theme-card p-6 rounded-xl shadow-sm border border-slate-700/50">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-4"><i class="ph-bold ph-heartbeat"></i> System Management</h3>
-                    <div class="flex justify-between items-center py-2 border-b border-slate-700/50">
-                        <span class="text-sm text-slate-300">Database Size</span>
-                        <span class="text-xs font-mono text-slate-500" id="sys-db-size">...</span>
-                    </div>
-                    <div class="mt-4">
-                        <button onclick="resetSystem()" class="w-full border border-red-500 text-red-500 hover:bg-red-500/20 py-2 rounded text-sm font-bold transition">Factory Reset</button>
+                <div class="theme-card p-6 rounded-xl border border-slate-700/50"><h3 class="text-sm font-bold text-slate-500 uppercase mb-4"><i class="ph-bold ph-heartbeat"></i> Management</h3>
+                    <div class="flex justify-between items-center py-2 border-b border-slate-700/50"><span class="text-sm text-slate-300">Database Size</span><span class="text-xs font-mono text-slate-500" id="sys-db-size">...</span></div>
+                    <div class="flex gap-2 mt-4">
+                        <button onclick="openBulkPoolModal()" class="w-1/2 border border-indigo-500/50 text-indigo-400 hover:bg-indigo-500/10 py-2 rounded text-sm font-bold transition">Bulk Pool Config</button>
+                        <button onclick="resetSystem()" class="w-1/2 border border-red-500/50 text-red-500 hover:bg-red-500/10 py-2 rounded text-sm font-bold transition">Factory Reset</button>
                     </div>
                 </div>
-                
-                <div class="theme-card p-6 rounded-xl shadow-sm border border-slate-700/50 md:col-span-2">
-                    <h3 class="text-sm font-bold text-slate-500 uppercase tracking-wider mb-6 flex items-center gap-2">
-                        <i class="ph-bold ph-bell"></i> Notification Engine
-                    </h3>
-                    
-                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8 mb-6">
-                        <div class="space-y-4">
-                            <p class="text-[10px] font-bold text-indigo-400 uppercase border-b border-slate-700/50 pb-1">Ntfy.sh</p>
-                            <div class="grid grid-cols-1 gap-4">
-                                <div class="grid grid-cols-2 gap-4">
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Server</label>
-                                        <input type="text" id="ntfyServer" value="{{ settings.ntfy_server }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm" placeholder="https://ntfy.sh">
-                                    </div>
-                                    <div>
-                                        <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Delay (Sec)</label>
-                                        <input type="number" id="ntfyTimeout" value="{{ settings.ntfy_timeout }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm">
-                                    </div>
-                                </div>
-                                <div>
-                                    <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Topic</label>
-                                    <input type="text" id="ntfyTopic" value="{{ settings.ntfy_topic }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm font-mono">
-                                </div>
-                            </div>
+                <div class="theme-card p-6 rounded-xl border border-slate-700/50 md:col-span-2"><h3 class="text-sm font-bold text-indigo-400 uppercase mb-6 flex items-center gap-2"><i class="ph-bold ph-bell-ringing"></i> Notification Engine</h3>
+                    <div class="grid grid-cols-1 lg:grid-cols-2 gap-8">
+                        <div class="space-y-4"><p class="text-[10px] font-bold text-slate-500 uppercase border-b border-slate-700/50 pb-1">ntfy.sh Protocol</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="text-[10px] font-bold text-slate-500 block">Server</label><input type="text" id="ntfyServer" value="{{ settings.ntfy_server }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-xs"></div><div><label class="text-[10px] font-bold text-slate-500 block">Topic</label><input type="text" id="ntfyTopic" value="{{ settings.ntfy_topic }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-xs font-mono"></div></div>
                         </div>
-
-                        <div class="space-y-4">
-                            <p class="text-[10px] font-bold text-purple-400 uppercase border-b border-slate-700/50 pb-1">Nostr (Direct Message)</p>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">App Private Key (nsec/hex)</label>
-                                <input type="password" id="nostrPrivKey" value="{{ settings.nostr_privkey }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm font-mono" placeholder="Your bot's private key">
-                            </div>
-                            <div>
-                                <label class="block text-[10px] font-bold text-slate-500 uppercase mb-1">Your Public Key (npub/hex)</label>
-                                <input type="text" id="nostrPubKey" value="{{ settings.nostr_recipient_pubkey }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-sm font-mono" placeholder="Your main account pubkey">
-                            </div>
+                        <div class="space-y-4"><p class="text-[10px] font-bold text-indigo-500 uppercase border-b border-slate-700/50 pb-1">Nostr Protocol</p>
+                            <div class="grid grid-cols-1 md:grid-cols-2 gap-4"><div><label class="text-[10px] font-bold text-slate-500 block">App Private Key</label><input type="password" id="nostrPrivKey" value="{{ settings.nostr_privkey }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-xs font-mono"></div><div><label class="text-[10px] font-bold text-slate-500 block">Your Public Key</label><input type="text" id="nostrPubKey" value="{{ settings.nostr_recipient_pubkey }}" class="w-full bg-slate-900 border border-slate-700 text-white p-2 rounded text-xs font-mono"></div></div>
                         </div>
                     </div>
-
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 border-t border-slate-700/50 pt-4">
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox" id="notifyOffline" {% if settings.notify_offline %}checked{% endif %} class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
-                            <span class="text-xs font-bold text-slate-400 group-hover:text-slate-200 transition uppercase">Miner Offline</span>
-                        </label>
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox" id="notifyBlocks" {% if settings.notify_blocks %}checked{% endif %} class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
-                            <span class="text-xs font-bold text-slate-400 group-hover:text-slate-200 transition uppercase">Block Discovery</span>
-                        </label>
-                        <label class="flex items-center gap-3 cursor-pointer group">
-                            <input type="checkbox" id="notifyTuning" {% if settings.notify_tuning %}checked{% endif %} class="w-4 h-4 rounded border-slate-700 bg-slate-900 text-indigo-600 focus:ring-indigo-500">
-                            <span class="text-xs font-bold text-slate-400 group-hover:text-slate-200 transition uppercase">Tuning Success</span>
-                        </label>
-                    </div>
-                    
-                    <div class="flex gap-3 mt-6">
-                        <button onclick="testNtfy()" class="w-1/4 bg-slate-700 hover:bg-slate-600 text-slate-300 py-2 rounded font-bold transition flex items-center justify-center gap-2"><i class="ph-bold ph-paper-plane-tilt"></i> Test Ntfy</button>
-                        <button onclick="testNostr()" class="w-1/4 bg-purple-900/50 hover:bg-purple-800 text-purple-200 border border-purple-700/50 py-2 rounded font-bold transition flex items-center justify-center gap-2"><i class="ph-bold ph-broadcast"></i> Test Nostr</button>
-                        <button onclick="saveNotificationSettings()" class="w-2/4 bg-indigo-600 hover:bg-indigo-700 text-white py-2 rounded font-bold transition">Save All Config</button>
+                    <div class="mt-8 pt-6 border-t border-slate-700/50 flex flex-wrap items-center justify-between gap-6">
+                        <div class="flex gap-6">
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox" id="notifyOffline" {% if settings.notify_offline %}checked{% endif %} class="rounded bg-slate-900 border-slate-700 text-indigo-600"><span class="text-[10px] font-bold text-slate-400 group-hover:text-slate-200 uppercase">Offline</span></label>
+                            <label class="flex items-center gap-2 cursor-pointer group"><input type="checkbox" id="notifyBlocks" {% if settings.notify_blocks %}checked{% endif %} class="rounded bg-slate-900 border-slate-700 text-indigo-600"><span class="text-[10px] font-bold text-slate-400 group-hover:text-slate-200 uppercase">Blocks</span></label>
+                        </div>
+                        <div class="flex gap-3"><button onclick="testNtfy()" class="bg-slate-700 text-slate-300 px-4 py-2 rounded font-bold text-xs">Test ntfy</button><button onclick="testNostr()" class="bg-slate-700 text-slate-300 px-4 py-2 rounded font-bold text-xs">Test Nostr</button><button onclick="saveNotificationSettings()" class="bg-indigo-600 text-white px-6 py-2 rounded font-bold text-xs shadow-lg">Save Settings</button></div>
                     </div>
                 </div>
-
-                <div class="theme-card p-6 rounded-xl shadow-sm border border-slate-700/50 md:col-span-2">
-                    <h2 class="text-xl font-bold flex items-center gap-2 text-white"><i class="ph-fill ph-radar text-green-500"></i> Auto-Discovery</h2>
-                    <div class="flex gap-4 mt-4">
-                        <input type="text" id="subnetInput" value="{{ settings.subnet }}" class="flex-1 p-3 rounded-lg border border-slate-600 bg-slate-900 text-white" placeholder="192.168.1.0/24">
-                        <button onclick="runScan()" class="bg-indigo-600 text-white px-6 py-3 rounded-lg font-bold hover:bg-indigo-700 transition flex items-center gap-2"><i class="ph-bold ph-magnifying-glass"></i> Scan</button>
-                    </div>
-                </div>
-
-                <div class="theme-card p-8 rounded-2xl shadow-sm border border-slate-700/50 md:col-span-2 text-center mt-8">
-                    <h3 class="text-lg font-bold text-white mb-2 flex items-center justify-center gap-2">
-                        <i class="ph-fill ph-coffee text-amber-500"></i> Buy Me a Coffee
-                    </h3>
-                    <p class="text-slate-400 text-sm mb-6">If OpenAxe helps your fleet, consider supporting the developer!</p>
-                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4">
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
-                            <div>
-                                <p class="text-[10px] font-bold text-amber-500 uppercase mb-2">Lightning</p>
-                                <code class="text-xs text-slate-300 break-all font-mono">lightning@cfultz.com</code>
-                            </div>
-                            <button id="copyLightning" onclick="copyToClipboard('lightning@cfultz.com', 'copyLightning')" class="mt-3 text-slate-500 hover:text-indigo-400 transition flex items-center justify-center gap-2"><i class="ph-bold ph-copy"></i></button>
-                        </div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
-                            <div>
-                                <p class="text-[10px] font-bold text-yellow-500 uppercase mb-2">BTC</p>
-                                <code class="text-xs text-slate-300 break-all font-mono">bc1qg4qq5xmtk59tef5n729nn7v2y30sgkgkducwru</code>
-                            </div>
-                            <button id="copyBTC" onclick="copyToClipboard('bc1qg4qq5xmtk59tef5n729nn7v2y30sgkgkducwru', 'copyBTC')" class="mt-3 text-slate-500 hover:text-indigo-400 transition flex items-center justify-center gap-2"><i class="ph-bold ph-copy"></i></button>
-                        </div>
-                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50 flex flex-col justify-between">
-                            <div>
-                                <p class="text-[10px] font-bold text-indigo-400 uppercase mb-2">BC2</p>
-                                <code class="text-xs text-slate-300 break-all font-mono">bc1qrkakhz9lr9jg6hzprfch83q9yk3fstnyre3a2m</code>
-                            </div>
-                            <button id="copyBC2" onclick="copyToClipboard('bc1qrkakhz9lr9jg6hzprfch83q9yk3fstnyre3a2m', 'copyBC2')" class="mt-3 text-slate-500 hover:text-indigo-400 transition flex items-center justify-center gap-2"><i class="ph-bold ph-copy"></i></button>
-                        </div>
+                <div class="theme-card p-8 rounded-2xl border border-slate-700/50 md:col-span-2 text-center mt-8"><h3 class="text-lg font-bold text-white mb-2 flex items-center justify-center gap-2"><i class="ph-fill ph-coffee text-amber-500"></i> Buy Me a Coffee</h3>
+                    <div class="grid grid-cols-1 md:grid-cols-3 gap-4 mt-6">
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50"><div><p class="text-[10px] font-bold text-amber-500 uppercase mb-2">Lightning</p><code class="text-xs text-slate-300 break-all font-mono">lightning@cfultz.com</code></div><button onclick="copyToClipboard('lightning@cfultz.com', 'copyLightning')" id="copyLightning" class="mt-3 text-slate-500 hover:text-indigo-400"><i class="ph-bold ph-copy"></i></button></div>
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50"><div><p class="text-[10px] font-bold text-yellow-500 uppercase mb-2">BTC</p><code class="text-xs text-slate-300 break-all font-mono">bc1qg4qq5xmtk59tef5n729nn7v2y30sgkgkducwru</code></div><button onclick="copyToClipboard('bc1qg4qq5xmtk59tef5n729nn7v2y30sgkgkducwru', 'copyBTC')" id="copyBTC" class="mt-3 text-slate-500 hover:text-indigo-400"><i class="ph-bold ph-copy"></i></button></div>
+                        <div class="bg-slate-900/50 p-4 rounded-xl border border-slate-700/50"><div><p class="text-[10px] font-bold text-indigo-400 uppercase mb-2">BC2</p><code class="text-xs text-slate-300 break-all font-mono">bc1qrkakhz9lr9jg6hzprfch83q9yk3fstnyre3a2m</code></div><button onclick="copyToClipboard('bc1qrkakhz9lr9jg6hzprfch83q9yk3fstnyre3a2m', 'copyBC2')" id="copyBC2" class="mt-3 text-slate-500 hover:text-indigo-400"><i class="ph-bold ph-copy"></i></button></div>
                     </div>
                 </div>
             </div>
         </div>
     </main>
-
-    <div id="detailModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4 transition-opacity duration-300" data-ip="">
-        <div class="theme-card w-full max-w-2xl rounded-2xl shadow-2xl overflow-hidden max-h-[95vh] flex flex-col border border-slate-700">
-            <div class="px-6 py-4 border-b border-slate-700/50 flex justify-between items-center bg-slate-800/50">
-                <div>
-                    <h2 class="text-xl font-bold flex items-center gap-2 text-white"><span id="detailName">Miner</span><button onclick="openRenameModal()" class="text-slate-500 hover:text-indigo-400 text-sm"><i class="ph-bold ph-pencil-simple"></i></button></h2>
-                    <p class="text-sm text-slate-500 font-mono" id="detailIP">192.168.1.X</p>
-                </div>
-                <button onclick="closeDetail()" class="p-2 hover:bg-slate-700 rounded-full text-slate-500"><i class="ph-bold ph-x text-lg"></i></button>
-            </div>
+    <div id="detailModal" class="fixed inset-0 z-[100] hidden items-center justify-center bg-slate-900/80 backdrop-blur-sm p-4" data-ip="">
+        <div class="theme-card w-full max-w-2xl rounded-2xl border border-slate-700 overflow-hidden max-h-[95vh] flex flex-col shadow-2xl">
+            <div class="px-6 py-4 border-b border-slate-700/50 flex justify-between bg-slate-800/50"><div><h2 class="text-xl font-bold flex items-center gap-2 text-white"><span id="detailName">Miner</span><button onclick="openRenameModal()" class="text-slate-500 hover:text-indigo-400 text-sm ml-2"><i class="ph-bold ph-pencil-simple"></i></button></h2><p class="text-sm text-slate-500 font-mono" id="detailIP"></p></div><button onclick="closeDetail()" class="p-2 text-slate-500 hover:bg-slate-700 rounded-full"><i class="ph-bold ph-x text-lg"></i></button></div>
             <div class="overflow-y-auto p-6 space-y-6">
                 <div class="grid grid-cols-2 gap-4">
-                    <div class="bg-slate-900 text-white p-5 rounded-xl border border-slate-700"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Hashrate</p><p class="text-3xl font-bold" id="detailHash">0</p><p class="text-xs text-slate-500 mt-1" id="detailHashRaw">0 GH/s</p></div>
-                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 text-white"><p class="text-slate-500 text-[10px] font-bold uppercase mb-1">Temp</p><p class="text-3xl font-bold" id="detailTemp">0°C</p><p class="text-xs text-slate-500 mt-1" id="detailUptime">0d 0h</p></div>
+                    <div class="bg-slate-900 text-white p-5 rounded-xl border border-slate-700"><p class="text-slate-400 text-[10px] font-bold uppercase mb-1">Hashrate</p><p class="text-3xl font-bold" id="detailHash">0</p></div>
+                    <div class="bg-slate-800 p-5 rounded-xl border border-slate-700 text-white"><p class="text-slate-500 text-[10px] font-bold uppercase mb-1">Temp</p><p class="text-3xl font-bold" id="detailTemp">0°C</p></div>
                 </div>
-                <div class="grid grid-cols-3 gap-4 text-center">
-                     <div class="theme-card p-3 rounded-lg border border-slate-700/50"><p class="text-[10px] text-slate-500 uppercase font-bold">Power</p><p class="font-bold text-lg text-white" id="detailWatts">0 W</p></div>
-                     <div class="theme-card p-3 rounded-lg border border-slate-700/50"><p class="text-[10px] text-slate-500 uppercase font-bold">Eff</p><p class="font-bold text-lg text-white" id="detailEff">0 J/TH</p></div>
-                     <div class="theme-card p-3 rounded-lg border border-slate-700/50"><p class="text-[10px] text-slate-500 uppercase font-bold">Best Diff</p><p class="font-bold text-lg text-indigo-500" id="detailBestDiff">0</p></div>
-                </div>
-                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4"><i class="ph-bold ph-globe"></i> Pool</h3>
-                    <div class="space-y-4">
-                        <input type="text" id="poolURL" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="stratum+tcp://...">
-                        <div class="grid grid-cols-2 gap-4">
-                            <input type="text" id="poolUser" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="User">
-                            <input type="text" id="poolPass" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="Pass">
-                        </div>
-                        <button onclick="savePoolSettings()" class="w-full bg-slate-700 text-white py-2 rounded text-xs font-bold uppercase">Save Pool</button>
-                    </div>
-                </div>
-                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700">
-                    <h3 class="text-xs font-bold uppercase tracking-wider text-slate-500 mb-4"><i class="ph-bold ph-lightning"></i> Tuning</h3>
-                    <div class="grid grid-cols-1 md:grid-cols-2 gap-8">
-                        <div class="text-center"><p class="text-3xl font-bold text-white" id="valFreq">485</p><input type="range" id="inputFreq" min="200" max="800" step="5" class="w-full accent-indigo-500" oninput="document.getElementById('valFreq').innerText=this.value"></div>
-                        <div class="text-center"><p class="text-3xl font-bold text-white" id="valVolt">1200</p><input type="range" id="inputVolt" min="800" max="1600" step="10" class="w-full accent-indigo-500" oninput="document.getElementById('valVolt').innerText=this.value"></div>
-                    </div>
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700"><h3 class="text-xs font-bold uppercase text-slate-500 mb-4 tracking-widest"><i class="ph-bold ph-globe"></i> Pool Configuration</h3><div class="space-y-4"><input type="text" id="poolURL" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="stratum+tcp://..."><div class="grid grid-cols-2 gap-4"><input type="text" id="poolUser" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="User"><input type="text" id="poolPass" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="Pass"></div><button onclick="savePoolSettings()" class="w-full bg-slate-700 text-white py-2 rounded text-xs font-bold uppercase hover:bg-slate-600 transition">Update Pool Settings</button></div></div>
+                <div class="bg-slate-800/50 rounded-xl p-6 border border-slate-700"><h3 class="text-xs font-bold uppercase text-slate-500 mb-4 tracking-widest"><i class="ph-bold ph-lightning"></i> Hardware Tuning</h3><div class="grid grid-cols-1 md:grid-cols-2 gap-8"><div class="text-center"><p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Frequency (MHz)</p><p class="text-3xl font-bold text-white mb-2" id="valFreq">485</p><input type="range" id="inputFreq" min="200" max="800" step="5" class="w-full accent-indigo-500" oninput="document.getElementById('valFreq').innerText=this.value"></div><div class="text-center"><p class="text-[10px] uppercase font-bold text-slate-500 mb-2">Core Voltage (mV)</p><p class="text-3xl font-bold text-white mb-2" id="valVolt">1200</p><input type="range" id="inputVolt" min="800" max="1600" step="10" class="w-full accent-indigo-500" oninput="document.getElementById('valVolt').innerText=this.value"></div></div></div>
+            </div><div class="p-6 bg-slate-800 border-t border-slate-700 flex gap-3"><button id="rebootBtn" onclick="rebootMiner()" class="bg-slate-700 text-red-400 px-4 py-3 rounded-xl font-bold w-1/3 hover:bg-red-500/10 transition">Reboot</button><button onclick="applyOverclock()" class="bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold shadow-lg w-2/3 hover:bg-indigo-500 transition">Apply Tuning</button></div>
+        </div>
+    </div>
+    <div id="bulkPoolModal" class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-900/90 backdrop-blur-md p-4">
+        <div class="theme-card w-full max-w-lg rounded-2xl shadow-2xl p-6 border border-slate-700">
+            <h2 class="text-xl font-bold text-white mb-2 flex items-center gap-2"><i class="ph-bold ph-stack text-indigo-500"></i> Bulk Pool Config</h2>
+            <p class="text-slate-400 text-xs mb-6">Apply these settings to ALL active miners.</p>
+            <div class="space-y-4">
+                <input type="text" id="bulkPoolURL" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="stratum+tcp://...">
+                <div class="grid grid-cols-2 gap-4">
+                    <input type="text" id="bulkPoolUser" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="User">
+                    <input type="text" id="bulkPoolPass" class="w-full bg-slate-900 border border-slate-600 rounded p-2 text-xs font-mono text-white" placeholder="Pass">
                 </div>
             </div>
-            <div class="p-6 bg-slate-800 border-t border-slate-700 flex gap-3">
-                <button id="rebootBtn" onclick="rebootMiner()" class="bg-slate-700 text-red-400 px-4 py-3 rounded-xl font-bold w-1/3">Reboot</button>
-                <button onclick="applyOverclock()" class="bg-indigo-600 text-white px-4 py-3 rounded-xl font-bold shadow-lg w-2/3">Apply</button>
+            <div class="flex gap-3 mt-6">
+                <button onclick="document.getElementById('bulkPoolModal').classList.add('hidden')" class="flex-1 py-3 rounded-lg bg-slate-700 text-slate-300 font-bold">Cancel</button>
+                <button onclick="saveBulkPoolSettings()" class="flex-1 py-3 rounded-lg bg-indigo-600 text-white font-bold">Apply to All</button>
             </div>
         </div>
     </div>
-
-    <div id="renameModal" class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-900/90 backdrop-blur-md p-4">
-        <div class="theme-card w-full max-w-sm rounded-xl shadow-2xl p-6 border border-slate-700">
-            <h2 class="text-lg font-bold text-white mb-4">Rename Device</h2>
-            <input type="text" id="newNameInput" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white mb-3 outline-none">
-            <button onclick="generateRandomName()" class="w-full py-2 mb-4 text-xs font-bold text-indigo-400 border border-dashed border-indigo-500/30 rounded-lg uppercase">Random Name</button>
-            <div class="flex gap-3">
-                <button onclick="document.getElementById('renameModal').classList.add('hidden')" class="flex-1 py-2 rounded-lg bg-slate-700 text-slate-300 font-bold">Cancel</button>
-                <button onclick="saveName()" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-bold">Save</button>
-            </div>
-        </div>
-    </div>
-
+    <div id="renameModal" class="fixed inset-0 z-[110] hidden items-center justify-center bg-slate-900/90 backdrop-blur-md p-4"><div class="theme-card w-full max-w-sm rounded-xl shadow-2xl p-6 border border-slate-700"><h2 class="text-lg font-bold text-white mb-4">Rename Device</h2><input type="text" id="newNameInput" class="w-full bg-slate-900 border border-slate-600 rounded-lg p-3 text-white mb-3 outline-none"><button onclick="generateRandomName()" class="w-full py-2 mb-4 text-xs font-bold text-indigo-400 border border-dashed border-indigo-500/30 rounded-lg uppercase">Random Name</button><div class="flex gap-3"><button onclick="document.getElementById('renameModal').classList.add('hidden')" class="flex-1 py-2 rounded-lg bg-slate-700 text-slate-300 font-bold">Cancel</button><button onclick="saveName()" class="flex-1 py-2 rounded-lg bg-indigo-600 text-white font-bold">Save</button></div></div></div>
     <script src="/static/js/dashboard.js"></script>
 </body>
 </html>
