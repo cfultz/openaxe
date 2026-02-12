@@ -5,7 +5,7 @@
 ## 🚀 Features
 * **Network Scanner:** Discover Bitaxe devices on your LAN.
 * **Fleet Statistics:** Aggregated hashrate, power, and block data.
-* **Multi-Coin:** Support for **Bitcoin (BTC)**, **Bitcoin Cash (BCH) **, and **Bitcoin 2 (BC2)**.
+* **Multi-Coin:** Support for **Bitcoin (BTC)**, **Bitcoin Cash (BCH)**, and **Bitcoin 2 (BC2)**.
 * **🔔 Notifications:** Integrated **Ntfy.sh** alerts and **Nostr** Encrypted DMs for status changes.
 
 ## ☕ Support the Project
