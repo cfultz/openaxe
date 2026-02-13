@@ -164,7 +164,7 @@ function spawnCoin() {
 }
 
 function spawnCelebrationIcon() {
-    const icons = ['🚀', '💸', '⛏️', '💰', '🤑', '💎', '🥳'];
+    const icons = ['🚀', '🧱', '⛏️', '💰', '🤑', '💎', '🚀'];
     const icon = document.createElement('div');
     icon.innerText = icons[Math.floor(Math.random() * icons.length)];
     icon.style.position = 'fixed';
@@ -227,6 +227,24 @@ function calculateLuck(hashrateGh, difficulty) {
     return { text: timeStr, prob: dailyProb };
 }
 
+// Logic to separate Host and Port from full URL
+function parseStratumUrl(fullUrl) {
+    if (!fullUrl) return { host: "", port: "" };
+    // Find the last colon to separate port, unless it's part of the protocol
+    // Typically stratum+tcp://host:port
+    const protocolEnd = fullUrl.indexOf('://');
+    const lastColon = fullUrl.lastIndexOf(':');
+    
+    // If the last colon is after the protocol definition, we assume it's the port separator
+    if (lastColon > protocolEnd + 2) {
+        const host = fullUrl.substring(0, lastColon);
+        const port = fullUrl.substring(lastColon + 1);
+        return { host, port };
+    }
+    // No port found
+    return { host: fullUrl, port: "" };
+}
+
 function openDetail(ip) {
     const miner = allMiners.find(m => m.ip === ip);
     if(!miner) return;
@@ -245,8 +263,13 @@ function openDetail(ip) {
     document.getElementById('valVolt').innerText = s.voltage || 1200;
     document.getElementById('inputVolt').value = s.voltage || 1200;
     
-    document.getElementById('poolURL').value = s.stratumURL || "";
+    // New Split Logic
+    const main = parseStratumUrl(s.stratumURL || "");
+    document.getElementById('poolHost').value = main.host;
+    document.getElementById('poolPort').value = main.port;
     document.getElementById('poolUser').value = s.stratumUser || "";
+    
+    // Fallback is usually not returned by basic stats API, so we leave blank or use if available in DB later
     
     document.getElementById('detailModal').classList.remove('hidden');
     document.getElementById('detailModal').classList.add('flex');
@@ -266,15 +289,29 @@ function openBulkPoolModal() {
 }
 
 async function saveBulkPoolSettings() {
-    const url = document.getElementById('bulkPoolURL').value;
+    const host = document.getElementById('bulkPoolHost').value;
+    const port = document.getElementById('bulkPoolPort').value;
     const user = document.getElementById('bulkPoolUser').value;
     const pass = document.getElementById('bulkPoolPass').value;
+    
+    const fbHost = document.getElementById('bulkPoolFallbackHost').value;
+    const fbPort = document.getElementById('bulkPoolFallbackPort').value;
+    const fbUser = document.getElementById('bulkPoolFallbackUser').value;
+    const fbPass = document.getElementById('bulkPoolFallbackPass').value;
+
     if(!confirm("This will restart ALL active miners. Continue?")) return;
     
+    // Reconstruct URLs
+    const url = port ? `${host}:${port}` : host;
+    const fbUrl = (fbHost && fbPort) ? `${fbHost}:${fbPort}` : fbHost;
+
     await fetch('/api/miners/pool/all', { 
         method: 'POST', 
         headers: {'Content-Type': 'application/json'}, 
-        body: JSON.stringify({ url: url, user: user, pass: pass }) 
+        body: JSON.stringify({ 
+            url: url, user: user, pass: pass,
+            fallbackUrl: fbUrl, fallbackUser: fbUser, fallbackPass: fbPass
+        }) 
     });
     alert("Bulk update command sent.");
     document.getElementById('bulkPoolModal').classList.add('hidden');
@@ -288,8 +325,29 @@ async function saveName() {
 }
 
 async function savePoolSettings() {
-    const ip = document.getElementById('detailModal').getAttribute('data-ip'), url = document.getElementById('poolURL').value, user = document.getElementById('poolUser').value, pass = document.getElementById('poolPass').value;
-    await fetch('/api/miners/pool', { method: 'POST', headers: {'Content-Type': 'application/json'}, body: JSON.stringify({ ip: ip, url: url, user: user, pass: pass }) });
+    const ip = document.getElementById('detailModal').getAttribute('data-ip');
+    
+    const host = document.getElementById('poolHost').value;
+    const port = document.getElementById('poolPort').value;
+    const user = document.getElementById('poolUser').value;
+    const pass = document.getElementById('poolPass').value;
+    
+    const fbHost = document.getElementById('poolFallbackHost').value;
+    const fbPort = document.getElementById('poolFallbackPort').value;
+    const fbUser = document.getElementById('poolFallbackUser').value;
+    const fbPass = document.getElementById('poolFallbackPass').value;
+
+    const url = port ? `${host}:${port}` : host;
+    const fbUrl = (fbHost && fbPort) ? `${fbHost}:${fbPort}` : fbHost;
+
+    await fetch('/api/miners/pool', { 
+        method: 'POST', 
+        headers: {'Content-Type': 'application/json'}, 
+        body: JSON.stringify({ 
+            ip: ip, url: url, user: user, pass: pass,
+            fallbackUrl: fbUrl, fallbackUser: fbUser, fallbackPass: fbPass
+        }) 
+    });
     alert("Pool update sent!");
 }
 

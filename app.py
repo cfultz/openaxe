@@ -161,7 +161,6 @@ def index(): return render_template('dashboard.html', coins=COINS, settings=DB['
 
 @app.route('/api/miners')
 def get_miners():
-    # FIX: Restored 'ts' (Total Shares) calculation so the coin drop animation works
     thr = tpwr = gb = tb = ts = 0; best = "-"
     for m in DB['miners']:
         s = m.get('stats', {'connected': False})
@@ -173,14 +172,17 @@ def get_miners():
     return jsonify({
         "miners": DB['miners'], "settings": DB['settings'], 
         "market": {"price": dp, "currency": curr, "diff": MARKET_DATA["diff"], "net_hash": MARKET_DATA["net_hash"], "reward": MARKET_DATA["reward"]}, 
-        "fleet": {"hash": thr, "power": tpwr, "best_share": gb, "best_miner": best, "blocks_found": tb, "total_shares": ts}, # Added total_shares back
+        "fleet": {"hash": thr, "power": tpwr, "best_share": gb, "best_miner": best, "blocks_found": tb, "total_shares": ts}, 
         "system": {"db_size_bytes": os.path.getsize(DATA_FILE) if os.path.exists(DATA_FILE) else 0}
     })
 
 @app.route('/api/miners/pool/all', methods=['POST'])
 def update_pool_all():
     d = request.json
-    p = {"stratumURL": d['url'], "stratumUser": d['user'], "stratumPass": d['pass']}
+    p = {
+        "stratumURL": d.get('url'), "stratumUser": d.get('user'), "stratumPass": d.get('pass'),
+        "fallbackStratumURL": d.get('fallbackUrl'), "fallbackStratumUser": d.get('fallbackUser'), "fallbackStratumPass": d.get('fallbackPass')
+    }
     c = 0
     for m in DB['miners']:
         try:
@@ -194,7 +196,10 @@ def update_pool_all():
 def update_pool():
     d = request.json
     try:
-        p = {"stratumURL": d['url'], "stratumUser": d['user'], "stratumPass": d['pass']}
+        p = {
+            "stratumURL": d.get('url'), "stratumUser": d.get('user'), "stratumPass": d.get('pass'),
+            "fallbackStratumURL": d.get('fallbackUrl'), "fallbackStratumUser": d.get('fallbackUser'), "fallbackStratumPass": d.get('fallbackPass')
+        }
         requests.patch(f"http://{d['ip']}/api/system", json=p, timeout=5)
         requests.post(f"http://{d['ip']}/api/system/restart", timeout=5)
         return jsonify({"status": "ok"})
@@ -255,6 +260,9 @@ def test_ntfy(): send_ntfy("OpenAxe Test!", "TEST"); return jsonify({"status": "
 
 @app.route('/api/test_nostr', methods=['POST'])
 def test_nostr(): send_nostr("OpenAxe Test Notification!"); return jsonify({"status": "ok"})
+
+@app.route('/donate')
+def donate_page(): return app.send_static_file('donate.html')
 
 if __name__ == '__main__':
     app.run(host='0.0.0.0', port=5055, debug=True)
